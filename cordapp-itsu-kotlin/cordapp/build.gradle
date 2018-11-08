@@ -56,6 +56,8 @@ dependencies {
     // Specify your CorDapp's dependencies below, including dependent CorDapps.
     // We've defined Cash as a dependent CorDapp as an example.
     cordapp project(":cordapp-contracts-states")
+    implementation 'com.google.code.gson:gson:2.8.5'
+    
 }
 
 task integrationTest(type: Test, dependsOn: []) {

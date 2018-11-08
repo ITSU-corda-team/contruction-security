@@ -1,8 +1,12 @@
 package com.template
 
 import co.paralleluniverse.fibers.Suspendable
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.StateAndContract
+import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.messaging.CordaRPCOps
@@ -19,6 +23,7 @@ import javax.ws.rs.core.Response
 import net.corda.core.contracts.requireThat
 import net.corda.core.messaging.vaultQueryBy
 import net.corda.core.node.services.queryBy
+import net.corda.core.serialization.serialize
 import net.corda.core.transactions.SignedTransaction
 import java.text.DateFormat
 import javax.ws.rs.QueryParam
@@ -55,7 +60,13 @@ class TemplateApi(val rpcOps: CordaRPCOps) {
     @Path("getProjects")
     @Produces(MediaType.APPLICATION_JSON)
     fun getProjectsEndpoint(): Response {
-        val projects = rpcOps.vaultQueryBy<ProjectState>().states.map { it.toString() }.joinToString("\r\n")
+
+        val gson = GsonBuilder().registerTypeAdapter(Party::class.java, PartySerializer())
+                .setPrettyPrinting()
+                .create()
+
+        val projects = gson.toJson(rpcOps.vaultQueryBy<ProjectState>())
+
         return Response.ok(projects).build()
     }
 }
