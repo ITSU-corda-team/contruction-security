@@ -1,11 +1,249 @@
-<!-- Define your frontend here. -->
+<!--
+--------
+WARNING:
+--------
+
+THIS CODE IS ONLY MADE AVAILABLE FOR DEMONSTRATION PURPOSES AND IS NOT SECURE! DO NOT USE IN PRODUCTION!
+
+FOR SECURITY REASONS, USING A JAVASCRIPT WEB APP HOSTED VIA THE CORDA NODE IS NOT THE RECOMMENDED WAY TO INTERFACE
+WITH CORDA NODES! HOWEVER, FOR THIS PRE-ALPHA RELEASE IT'S A USEFUL WAY TO EXPERIMENT WITH THE PLATFORM AS IT ALLOWS
+YOU TO QUICKLY BUILD A UI FOR DEMONSTRATION PURPOSES.
+
+GOING FORWARD WE RECOMMEND IMPLEMENTING A STANDALONE WEB SERVER THAT AUTHORISES VIA THE NODE'S RPC INTERFACE. IN THE
+COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Template CorDapp</title>
+    <title>Team ITSU - Construction Project Financing</title>
+
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.0-rc.1/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.2.0/ui-bootstrap-tpls.min.js"></script>
+    <script src="js/angular-module.js"></script>
+
+    <!-- Custom fonts for this template -->
+    <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i" rel="stylesheet">
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+
+    <link href="css/resume.min.css" rel="stylesheet">
+
+
+
 </head>
-<body>
-<div>Template CorDapp frontend.</div>
+<body ng-app="demoAppModule" ng-controller="DemoAppController as demoApp">
+
+<script type="text/ng-template" id="messageContent.html">
+    <div class="modal-body" id="modal-body">
+        {{ modalInstanceTwo.message }}
+    </div>
+</script>
+
+<script type="text/ng-template" id="demoAppModal-create-project.html">
+    <div class="modal-header">
+        <h4 class="modal-title">Create new Project</h4>
+    </div>
+    <form>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="project-name" class="control-label">Project Name:</label>
+                <input type="text" ng-model="modalInstance.form.value1" class="form-control" id="project-name">
+            </div>
+            <div class="form-group">
+                <label for="project-value" class="control-label">Project Value:</label>
+                <input type="text" ng-model="modalInstance.form.value2" class="form-control" id="project-value">
+            </div>
+            <div class="form-group">
+                <label for="project-cost" class="control-label">Project Cost:</label>
+                <input type="text" ng-model="modalInstance.form.value3" class="form-control" id="project-cost">
+            </div>
+            <div class="form-group">
+                <label for="project-bank" class="control-label">Bank:</label>
+                <input type="text" ng-model="modalInstance.form.value4" class="form-control" id="project-bank">
+            </div>
+            <div class="form-group">
+                <label for="project-offtaker" class="control-label">Project Offtaker:</label>
+                <input type="text" ng-model="modalInstance.form.value5" class="form-control" id="project-offtaker">
+            </div>
+            <div ng-show="modalInstance1.formError" class="form-group">
+                <div class="alert alert-danger" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Error:</span>
+                    Enter valid project parameters
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button ng-click="modalInstance1.cancel()" type="button" class="btn btn-default">Exit</button>
+            <button ng-click="modalInstance1.create()" type="button" class="btn btn-primary">Create Project</button>
+        </div>
+    </form>
+</script>
+
+<!--<script type="text/ng-template" id="demoAppModal-close-project.html">
+    <div class="modal-header">
+        <h4 class="modal-title">Close Existing Project</h4>
+    </div>
+    <form>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="project-name-close" class="control-label">Project Name:</label>
+                <input type="text" ng-model="modalInstance.form.value" class="form-control" id="project-name-close">
+            </div>
+            <div ng-show="modalInstance.formError" class="form-group">
+                <div class="alert alert-danger" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Error:</span>
+                    Enter valid parameters
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button ng-click="modalInstance.cancel()" type="button" class="btn btn-default">Exit</button>
+            <button ng-click="modalInstance.create()" type="button" class="btn btn-primary">Close Project</button>
+        </div>
+    </form>
+</script>-->
+
+<script type="text/ng-template" id="demoAppModal-create-agreement.html">
+    <div class="modal-header">
+        <h4 class="modal-title">Create Security Agreement</h4>
+    </div>
+    <form>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="projectnameagreement" class="control-label">Project Name:</label>
+                <input type="text" ng-model="modalInstance.form.value" class="form-control" id="projectnameagreement">
+            </div>
+            <div ng-show="modalInstance.formError" class="form-group">
+                <div class="alert alert-danger" role="alert">
+                    <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                    <span class="sr-only">Error:</span>
+                    Enter valid parameters
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button ng-click="modalInstance.cancel()" type="button" class="btn btn-default">Exit</button>
+            <button ng-click="modalInstance.create()" type="button" class="btn btn-primary">Create Agreement</button>
+        </div>
+    </form>
+</script>-->
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+    <a class="navbar-brand js-scroll-trigger" href="#home">
+        <span class="d-block d-lg-none">Team ITSU</span>
+        <span class="d-none d-lg-block">
+          <img class="img-fluid img-profile mx-auto mb-2" src="img/logo.png" alt="">
+        </span>
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <br>
+    <br>
+    <br>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link js-scroll-trigger" href="#home">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link js-scroll-trigger" href="#page-1">Projects</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link js-scroll-trigger" href="#page-2">Agreements</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container-fluid p-0">
+
+    <section class="resume-section p-3 p-lg-5 d-flex d-column" id="home">
+        <div class="my-auto">
+            <h3>Construction Project Finance:</h3>
+            <h1 class="mb-0">
+                <span class="text-primary">Security Trustee Portal</span>
+            </h1>
+            <br>
+            <p>Via this portal it is possible to:</p>
+            <ul>
+                <li>Point #1</li>
+                <li>Point #2</li>
+                <li>Point #3</li>
+            </ul>
+            <p> A demonstration CorDapp by Andris, Jalal, Ross and Yash for <a href="https://www.meetup.com/Corda-Code-Club/">Corda Code Club</a> using the work specification by the <a href="https://www.constructionblockchain.org/">Construction Blockchain Consortium (CBC)</a>.</p>
+        </div>
+    </section>
+
+    <hr class="m-0">
+
+    <section class="resume-section p-3 p-lg-5 d-flex flex-column" id="page-1">
+        <div class="my-auto">
+            <h2 class="mb-5">Projects</h2>
+            <div class="row">
+                <div>
+                    <div ng-show="!demoApp.projects.length" class="panel-body">Use the "Create Projects" button to create a new project.</div>
+                    <div ng-repeat="project in demoApp.projects" class="panel panel-default">
+                        <div class="panel-body">
+                            <ul>
+                                <li>ProjectName: {{project.ProjectName}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="row" style = 'margin-left:0px'>
+                <button ng-click="demoApp.openCreateProjectModal()" type="button" class="btn btn-default navbar-btn">Create New Project</button>
+                <button ng-click="demoApp.openCloseProjectModal()" type="button" class="btn btn-default navbar-btn" style="margin-left: 5px;">Close Project - COMMENTED</button>
+
+            </div>
+        </div>
+    </section>
+
+    <hr class="m-0">
+
+    <section class="resume-section p-3 p-lg-5 d-flex flex-column" id="page-2">
+        <div class="my-auto">
+            <h2 class="mb-5">Agreements</h2>
+            <div class="row">
+                <div>
+                    <div ng-show="!demoApp.agreements.length" class="panel-body">Use the "Create Agreement" button to create a new agreement.</div>
+                    <div ng-repeat="agreement in demoApp.agreements" class="panel panel-default">
+                        <div class="panel-body">
+                            <ul>
+                                <li>Lender: {{agreement.lender}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <div class="row" style = 'margin-left:0px'>
+                <button ng-click="demoApp.openCreateAgreementModal()" type="button" class="btn btn-default navbar-btn">Create New Agreement</button>
+            </div>
+        </div>
+    </section>
+
+    <hr class="m-0">
+
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+<script src="js/resume.min.js"></script>
+
 </body>
 </html>
