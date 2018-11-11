@@ -167,7 +167,7 @@ class CreateProjectFlow(val ProjectName: String, val ProjectValue: Int, val Esti
     @Suspendable
     override fun call() {
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
-                .addOutputState(ProjectState(ProjectName, ProjectValue, ProjectStatus.STARTED, EstimatedProjectCost, 0, EstimatedProjectCost, ourIdentity, SecurityAgreement(ProjectName, ProjectValue, 5 ,ourIdentity, ourIdentity), Bank, Offtaker), ProjectContract.ID)
+                .addOutputState(ProjectState(Project(ProjectName, ProjectValue, EstimatedProjectCost, 0, EstimatedProjectCost), ProjectStatus.STARTED, SecurityAgreement(ProjectName, ProjectValue, 5 ,ourIdentity, ourIdentity), ourIdentity, Bank, Offtaker), ProjectContract.ID)
                 .addCommand(ProjectCommand.CreateProject(), ourIdentity.owningKey)
 //                .addCommand(ProjectContract.command.CreateProject(), ourIdentity.owningKey)
 /* .addCommand(ProjectContract.Commands.Create(), ourIdentity.owningKey) */
@@ -184,7 +184,7 @@ class GenerateSecurityAgreementFlow(val ProjectName: String) : FlowLogic<Unit>()
     @Suspendable
     override fun call() {
         val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
-        val input = projectStates.single { it.state.data.ProjectName == ProjectName }
+        val input = projectStates.single { it.state.data.Project.ProjectName == ProjectName }
       //  val input = projectStates.single { it.state.data.SecurityAgreement.SecurityAgreementName == ProjectName }
         val inputState = input.state.data
 
@@ -211,7 +211,7 @@ class CloseProjectFlow(val ProjectName: String) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
-        val input = projectStates.single { it.state.data.ProjectName == ProjectName }
+        val input = projectStates.single { it.state.data.Project.ProjectName == ProjectName }
         val inputState = input.state.data
 
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
@@ -232,7 +232,7 @@ class DeclareProjectFailureFlow(val ProjectName: String) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
-        val input = projectStates.single { it.state.data.ProjectName == ProjectName }
+        val input = projectStates.single { it.state.data.Project.ProjectName == ProjectName }
         val inputState = input.state.data
 
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
@@ -257,20 +257,74 @@ class DeclareProjectSuccessFlow(val ProjectName: String) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
-        val input = projectStates.single { it.state.data.ProjectName == ProjectName }
+        val input = projectStates.single { it.state.data.Project.ProjectName == ProjectName }
         val inputState = input.state.data
 
+        //Build transaction
+/* ygk orig  */
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
                 .addInputState(input)
-//                .addOutputState(inputState.copy( SecurityAgreement().SecurityAgreementOwner = inputState.Offtaker), ProjectContract.ID)
-                .addOutputState(inputState.copy( ProjectStatus = ProjectStatus.CLOSED_SUCCESS), ProjectContract.ID)
+                .addOutputState(inputState.copy(ProjectOwner = inputState.Offtaker), ProjectContract.ID)
+                .addOutputState(inputState.copy(ProjectStatus = ProjectStatus.CLOSED_SUCCESS), ProjectContract.ID)
+
                 .addCommand(ProjectCommand.DeclareProjectSuccess(), ourIdentity.owningKey)
         val signedTx = serviceHub.signInitialTransaction(txBuilder)
         subFlow(FinalityFlow(signedTx))
     }
+/*
+        val inputProjectState = projectStates.single { it.state.data.Project.ProjectName == ProjectName }
+        val inputProject = inputProjectState.state.data
+
+        val notary = serviceHub.networkMapCache.notaryIdentities.first()
+        val txBuilder = TransactionBuilder(notary).apply {
+            addCommand(Command(ProjectCommand.DeclareProjectSuccess(), ourIdentity.owningKey))
+            addInputState(inputProjectState)
+            addOutputState(inputProjectState.state.copy(data = inputProjectState.state.date.let{
+                ProjectState(
+                        ProjectStatus = ProjectStatus.CLOSED_SUCCESS,
+                        ProjectOwner.owningKey =  Offtaker.owningKey
+
+
+
+                )
+            }
+        }
+  */
 }
 
 /*
+
+
+   class PatientTreatmentPaymentResponseFlow(private val session: FlowSession) : FlowLogic<SignedTransaction>() {
+        @Suspendable
+        override fun call(): SignedTransaction {
+            val hospital = session.counterparty
+
+            val treatmentState = subFlow(ReceiveStateAndRefFlow<TreatmentState>(session)).single()
+
+            val hospitalAccount = session.receive<AccountAddress>().unwrap { it }
+
+            val treatment = treatmentState.state.data
+            val toPay = treatment.treatmentCost!! - treatment.amountPayed!!
+
+            //Build transaction
+            val notary = serviceHub.networkMapCache.notaryIdentities.first()
+            val txb = TransactionBuilder(notary).apply {
+                addCommand(Command(TreatmentCommand.FullyPayTreatment(), listOf(hospital.owningKey, ourIdentity.owningKey)))
+                addInputState(treatmentState)
+                addOutputState(treatmentState.state.copy(data = treatmentState.state.data.let {
+                    TreatmentState(
+                            treatment = it.treatment,
+                            estimatedTreatmentCost = it.estimatedTreatmentCost,
+                            treatmentCost = it.treatmentCost,
+                            amountPayed = it.treatmentCost,
+                            insurerQuote = it.insurerQuote,
+                            treatmentStatus = TreatmentStatus.FULLY_PAID,
+                            linearId = it.linearId
+                    )
+                }))
+            }
+
 @InitiatingFlow
 @StartableByRPC
 

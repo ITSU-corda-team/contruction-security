@@ -22,6 +22,14 @@ enum class ProjectStatus {
     STARTED, CLOSED, CLOSED_SUCCESS, CLOSED_FAILURE
 }
 
+@CordaSerializable
+data class Project(
+        val ProjectName: String,
+        val ProjectValue: Int,
+        val EstimatedProjectCost: Int,
+        val ProjectCostToDate: Int,
+        val LoanSanctionedAmount: Int
+)
 
 @CordaSerializable
 data class SecurityAgreement(
@@ -55,6 +63,16 @@ override fun toString(): String {
 
 
 data class ProjectState(
+        val Project: Project,
+        val ProjectStatus: ProjectStatus,
+        val SecurityAgreement: SecurityAgreement,
+        val ProjectOwner: Party,
+        val Bank: Party,
+        val Offtaker: Party) : ContractState {
+    override val participants = listOf(Bank, Offtaker)
+}
+/*
+data class ProjectState(
         val ProjectName: String,
         val ProjectValue: Int,
         val ProjectStatus: ProjectStatus,
@@ -68,6 +86,7 @@ data class ProjectState(
         val Offtaker: Party) : ContractState {
     override val participants = listOf(Bank, Offtaker)
 }
+*/
 
 sealed class ProjectCommand : TypeOnlyCommandData() {
     class CreateProject : ProjectCommand()
@@ -127,9 +146,9 @@ class ProjectContract : Contract {
         requireThat {
             inputProjects.singleOrNull()?.let {
 
-                "The same Project" using (it.ProjectName == outputProject.ProjectName)
-                "The same EstimatedProjectCost" using (it.EstimatedProjectCost == outputProject.EstimatedProjectCost)
-                "The same ProjectValue" using (it.ProjectValue == outputProject.ProjectValue)
+                "The same Project" using (it.Project.ProjectName == outputProject.Project.ProjectName)
+                "The same EstimatedProjectCost" using (it.Project.EstimatedProjectCost == outputProject.Project.EstimatedProjectCost)
+                "The same ProjectValue" using (it.Project.ProjectValue == outputProject.Project.ProjectValue)
                 //        "The same linearId" using (it.linearId == outputProject.linearId)
             }
 
@@ -141,7 +160,7 @@ class ProjectContract : Contract {
                 is ProjectCommand.CreateProject -> {
                     "No inputs should be consumed when creating a Project." using (inputProjects.isEmpty())
                     "The Project status should be STARTED." using (outputProject.ProjectStatus == ProjectStatus.STARTED)
-                    "The Project value should be greater than ZERO." using (outputProject.ProjectValue > 0)
+                    "The Project value should be greater than ZERO." using (outputProject.Project.ProjectValue > 0)
                 }
                 is ProjectCommand.GenerateSecurityAgreement -> {
                     "The Project status should be STARTED" using (inputProjects.single().ProjectStatus == ProjectStatus.STARTED)
@@ -154,20 +173,20 @@ class ProjectContract : Contract {
                 is ProjectCommand.CloseProject -> {
                     "The Project input status should be STARTED." using (inputProjects.single().ProjectStatus == ProjectStatus.STARTED)
                     "The Project output status should be CLOSED." using (outputProject.ProjectStatus == ProjectStatus.CLOSED)
-                    "The Project Cost To Date should be non-ZERO" using (outputProject.ProjectCostToDate > 0)
+                    "The Project Cost To Date should be non-ZERO" using (outputProject.Project.ProjectCostToDate > 0)
 
                 }
                 is ProjectCommand.DeclareProjectFailure -> {
                     "The Project input status should be CLOSED." using (inputProjects.single().ProjectStatus == ProjectStatus.CLOSED)
                     "The Project output status should be CLOSED_FAILURE." using (outputProject.ProjectStatus == ProjectStatus.CLOSED_FAILURE)
-                    "The Project Cost To Date will be greater than Estimated Project Cost." using (outputProject.ProjectCostToDate > outputProject.EstimatedProjectCost)
+                    "The Project Cost To Date will be greater than Estimated Project Cost." using (outputProject.Project.ProjectCostToDate > outputProject.Project.EstimatedProjectCost)
                     "The Bank should be the owner of the Security Agreement." using (outputProject.SecurityAgreement.SecurityAgreementOwner.owningKey == outputProject.Bank.owningKey)
 
                 }
                 is ProjectCommand.DeclareProjectSuccess -> {
                     "The Project input status should be CLOSED." using (inputProjects.single().ProjectStatus == ProjectStatus.CLOSED)
                     "The Project output status should be CLOSED_SUCCESS." using (outputProject.ProjectStatus == ProjectStatus.CLOSED_SUCCESS)
-                    "The Project Cost To Date will be less than or equal to Estimated Project Cost." using (outputProject.ProjectCostToDate <= outputProject.EstimatedProjectCost)
+                    "The Project Cost To Date will be less than or equal to Estimated Project Cost." using (outputProject.Project.ProjectCostToDate <= outputProject.Project.EstimatedProjectCost)
                     "The Offtaker should be the owner of the Security Agreement." using (outputProject.SecurityAgreement.SecurityAgreementOwner.owningKey == outputProject.Offtaker.owningKey)
 
                 }
