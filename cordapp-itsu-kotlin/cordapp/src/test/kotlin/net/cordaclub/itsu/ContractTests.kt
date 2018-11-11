@@ -1,4 +1,4 @@
-package com.template
+package net.cordaclub.itsu
 
 import net.corda.testing.setCordappPackages
 import net.corda.testing.unsetCordappPackages

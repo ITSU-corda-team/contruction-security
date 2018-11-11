@@ -1,4 +1,4 @@
-package com.template
+package net.cordaclub.itsu
 
 import net.corda.core.utilities.getOrThrow
 import net.corda.node.services.transactions.SimpleNotaryService

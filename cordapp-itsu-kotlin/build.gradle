@@ -98,7 +98,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     directory "./build/nodes"
     networkMap "O=Controller,L=London,C=GB"
     node {
-        name "O=Controller,L=London,C=GB"
+        name = "O=Controller,L=London,C=GB"
         advertisedServices = ["corda.notary.validating"]
         p2pPort 10002
         rpcPort 10003
@@ -108,6 +108,47 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
                 "net.corda:corda-finance:$corda_release_version"
         ]
     }
+
+    node {
+        name = "O=Offtaker,L=London,C=GB"
+        advertisedServices = []
+        p2pPort 10017
+        rpcPort 10018
+        webPort 10019
+        cordapps = [
+                "$project.group:cordapp-contracts-states:$project.version",
+                "$project.group:cordapp:$project.version",
+                "net.corda:corda-finance:$corda_release_version"
+        ]
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
+    }
+    node {
+        name = "O=SecurityTrustee,L=London,C=GB"
+        advertisedServices = []
+        p2pPort 10020
+        rpcPort 10021
+        webPort 10022
+        cordapps = [
+                "$project.group:cordapp-contracts-states:$project.version",
+                "$project.group:cordapp:$project.version",
+                "net.corda:corda-finance:$corda_release_version"
+        ]
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
+    }
+    node {
+        name = "O=Bank,L=London,C=GB"
+        advertisedServices = []
+        p2pPort 10023
+        rpcPort 10024
+        webPort 10025
+        cordapps = [
+                "$project.group:cordapp-contracts-states:$project.version",
+                "$project.group:cordapp:$project.version",
+                "net.corda:corda-finance:$corda_release_version"
+        ]
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
+    }
+    /* YGK
     node {
         name "O=PartyA_Shareholder1,L=London,C=GB"
         advertisedServices = []
@@ -161,45 +202,6 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
     }
     node {
-        name "O=PartyE_Offtaker,L=London,C=GB"
-        advertisedServices = []
-        p2pPort 10017
-        rpcPort 10018
-        webPort 10019
-        cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-                "net.corda:corda-finance:$corda_release_version"
-        ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
-    }
-    node {
-        name "O=PartyF_SecurityTrustee,L=London,C=GB"
-        advertisedServices = []
-        p2pPort 10020
-        rpcPort 10021
-        webPort 10022
-        cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-                "net.corda:corda-finance:$corda_release_version"
-        ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
-    }
-    node {
-        name "O=PartyG_Lender,L=London,C=GB"
-        advertisedServices = []
-        p2pPort 10023
-        rpcPort 10024
-        webPort 10025
-        cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-                "net.corda:corda-finance:$corda_release_version"
-        ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
-    }
-    node {
         name "O=PartyH_NewCompany,L=London,C=GB"
         advertisedServices = []
         p2pPort 10026
@@ -212,11 +214,12 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
     }
+    */
 
 }
 
 task runTemplateClient(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.template.ClientKt'
-    args 'localhost:10006'
+    args = 'localhost:10006'
 }

@@ -1,4 +1,4 @@
-package com.template
+package net.cordaclub.itsu
 
 import net.corda.node.internal.StartedNode
 import net.corda.testing.node.MockNetwork

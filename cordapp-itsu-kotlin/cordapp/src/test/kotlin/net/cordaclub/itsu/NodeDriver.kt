@@ -1,4 +1,4 @@
-package com.template
+package net.cordaclub.itsu
 
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.utilities.getOrThrow
@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
     driver(startNodesInProcess = true) {
         startNode(providedName = CordaX500Name("Controller", "London", "GB"), advertisedServices = setOf(ServiceInfo(ValidatingNotaryService.type)))
         val (nodeA, nodeB, nodeC) = listOf(
-                startNode(providedName = CordaX500Name("Trustee", "London", "GB"), rpcUsers = listOf(user)),
+                startNode(providedName = CordaX500Name("SecurityTrustee", "London", "GB"), rpcUsers = listOf(user)),
                 startNode(providedName = CordaX500Name("Bank", "New York", "US"), rpcUsers = listOf(user)),
                 startNode(providedName = CordaX500Name("Offtaker", "London", "GB"), rpcUsers = listOf(user))).map { it.getOrThrow() }
 

@@ -1,6 +1,7 @@
-package com.template
-
-import com.google.gson.*
+package net.cordaclub.itsu
+/*
+//import com.google.code.gson:gson:2.8.5
+//import com.google.gson.*
 import net.corda.core.identity.Party
 import java.lang.reflect.Type
 import com.google.gson.GsonBuilder
@@ -15,3 +16,4 @@ class PartySerializer : JsonSerializer<Party> {
         return result
     }
 }
+*/
