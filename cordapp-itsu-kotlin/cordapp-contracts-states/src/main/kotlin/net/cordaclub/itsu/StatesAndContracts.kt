@@ -61,7 +61,7 @@ override fun toString(): String {
 // * State *
 // *********
 
-
+/*
 data class ProjectState(
         val Project: Project,
         val ProjectStatus: ProjectStatus,
@@ -71,7 +71,8 @@ data class ProjectState(
         val Offtaker: Party) : ContractState {
     override val participants = listOf(Bank, Offtaker)
 }
-/*
+*/
+
 data class ProjectState(
         val ProjectName: String,
         val ProjectValue: Int,
@@ -80,13 +81,14 @@ data class ProjectState(
         val ProjectCostToDate: Int,
         val LoanSanctionedAmount: Int,
         val ProjectOwner: Party,
-        val SecurityAgreement: SecurityAgreement,
-//        val SecurityTrustee: Party,
+//        val SecurityAgreement: SecurityAgreement,
+        val SecurityTrustee: Party,
         val Bank: Party,
         val Offtaker: Party) : ContractState {
-    override val participants = listOf(Bank, Offtaker)
+    override val participants = listOf(SecurityTrustee, Bank, Offtaker)
 }
-*/
+
+/* ygk comment for now
 
 sealed class ProjectCommand : TypeOnlyCommandData() {
     class CreateProject : ProjectCommand()
@@ -96,7 +98,7 @@ sealed class ProjectCommand : TypeOnlyCommandData() {
     class DeclareProjectFailure : ProjectCommand()
     class DeclareProjectSuccess : ProjectCommand()
 }
-
+*/
 /* ygk v1
 data class ProjectState(
         val name: String,
@@ -128,16 +130,31 @@ class SecurityAgreementState(val value: Int,
 // * Contract Code *
 // *****************
 
+/*
+class ProjectContract : Contract {
+    companion object {
+        val ID = "com.template.ProjectContract"
+    }
+    override fun verify(tx: LedgerTransaction) {
+        // TODO: Implement logic.
+    }
+    interface Commands: CommandData {
+        class Create: Commands
+        class DeclareBankruptcy: Commands
+    }
+}*/
+
 // This is used to identify our contract when building a transaction
 class ProjectContract : Contract {
     companion object {
 //        val ID = "com.template.ProjectContract"
-        val ID = "net.cordaclub.itsu.ProjectContract"
-//        val ID: ContractClassName = ProjectContract::class.qualifiedName !!
+//        val ID = "net.cordaclub.itsu.ProjectContract"
+        val ID: ContractClassName = ProjectContract::class.qualifiedName !!
     }
 
     override fun verify(tx: LedgerTransaction) {
-        // TODO: Implement logic.
+
+/*        // TODO: Implement logic.
         val command = tx.commands.requireSingleCommand<ProjectCommand>()
         val setOfSigners = command.signers.toSet()
         val inputProjects = tx.inputsOfType<ProjectState>()
@@ -146,16 +163,58 @@ class ProjectContract : Contract {
         requireThat {
             inputProjects.singleOrNull()?.let {
 
-                "The same Project" using (it.Project.ProjectName == outputProject.Project.ProjectName)
-                "The same EstimatedProjectCost" using (it.Project.EstimatedProjectCost == outputProject.Project.EstimatedProjectCost)
-                "The same ProjectValue" using (it.Project.ProjectValue == outputProject.Project.ProjectValue)
-                //        "The same linearId" using (it.linearId == outputProject.linearId)
+//                "The same Project" using (it.Project.ProjectName == outputProject.Project.ProjectName)
+//                "The same EstimatedProjectCost" using (it.Project.EstimatedProjectCost == outputProject.Project.EstimatedProjectCost)
+//                "The same ProjectValue" using (it.Project.ProjectValue == outputProject.Project.ProjectValue)
+                "The same Project" using (it.ProjectName == outputProject.ProjectName)
+                "The same EstimatedProjectCost" using (it.EstimatedProjectCost == outputProject.EstimatedProjectCost)
+                "The same ProjectValue" using (it.ProjectValue == outputProject.ProjectValue)
+//                "The same linearId" using (it.linearId == outputProject.linearId)
             }
 
 //            "The patient has a correct NINO" using (isCorrectNino(outputTreatment.treatment.patient.nino))
 
 //            "The hospital signed the transaction" using (setOfSigners.containsAll(outputTreatment.participants.map { it.owningKey } + inputTreatments.flatMap { it.participants.map { it.owningKey } }))
 
+            when (command.value) {
+                is ProjectCommand.CreateProject -> {
+                    "No inputs should be consumed when creating a Project." using (inputProjects.isEmpty())
+                    "The Project status should be STARTED." using (outputProject.ProjectStatus == ProjectStatus.STARTED)
+                    "The Project value should be greater than ZERO." using (outputProject.ProjectValue > 0)
+                }
+                is ProjectCommand.GenerateSecurityAgreement -> {
+                    "The Project status should be STARTED" using (inputProjects.single().ProjectStatus == ProjectStatus.STARTED)
+                    "The Security Trustee should be the owner of the Security Agreement" using (outputProject.ProjectOwner.owningKey == outputProject.SecurityTrustee.owningKey)
+
+//                    "The insurer signed the transaction" using (setOfSigners.contains(outputTreatment.insurerQuote!!.insurer.owningKey))
+//                    "The estimated value is greater or equal than the quote" using (outputTreatment.estimatedTreatmentCost >= outputTreatment.insurerQuote!!.maxCoveredValue)
+
+                }
+                is ProjectCommand.CloseProject -> {
+                    "The Project input status should be STARTED." using (inputProjects.single().ProjectStatus == ProjectStatus.STARTED)
+                    "The Project output status should be CLOSED." using (outputProject.ProjectStatus == ProjectStatus.CLOSED)
+                    "The Project Cost To Date should be non-ZERO" using (outputProject.ProjectCostToDate > 0)
+
+                }
+                is ProjectCommand.DeclareProjectFailure -> {
+                    "The Project input status should be CLOSED." using (inputProjects.single().ProjectStatus == ProjectStatus.CLOSED)
+                    "The Project output status should be CLOSED_FAILURE." using (outputProject.ProjectStatus == ProjectStatus.CLOSED_FAILURE)
+                    "The Project Cost To Date will be greater than Estimated Project Cost." using (outputProject.ProjectCostToDate > outputProject.EstimatedProjectCost)
+                    "The Bank should be the owner of the Security Agreement." using (outputProject.ProjectOwner.owningKey == outputProject.Bank.owningKey)
+
+                }
+                is ProjectCommand.DeclareProjectSuccess -> {
+                    "The Project input status should be CLOSED." using (inputProjects.single().ProjectStatus == ProjectStatus.CLOSED)
+                    "The Project output status should be CLOSED_SUCCESS." using (outputProject.ProjectStatus == ProjectStatus.CLOSED_SUCCESS)
+                    "The Project Cost To Date will be less than or equal to Estimated Project Cost." using (outputProject.ProjectCostToDate <= outputProject.EstimatedProjectCost)
+                    "The Offtaker should be the owner of the Security Agreement." using (outputProject.ProjectOwner.owningKey == outputProject.Offtaker.owningKey)
+
+                }
+            }
+
+ TODO Implement Logic*/
+
+            /*
             when (command.value) {
                 is ProjectCommand.CreateProject -> {
                     "No inputs should be consumed when creating a Project." using (inputProjects.isEmpty())
@@ -192,17 +251,19 @@ class ProjectContract : Contract {
                 }
             }
         }
+            */
 
     }
 
-    /* YGK Commented for now
+    /* YGK Commented for now*/
     interface Commands: CommandData {
-        class Create: Commands
-        class DeclareBankruptcy: Commands
+        class CreateProject: Commands
+        class GenerateSecurityAgreement: Commands
+        class CloseProject: Commands
         class DeclareProjectSuccess: Commands
         class DeclareProjectFailure: Commands
     }
-    */
+
 }
 
 /*

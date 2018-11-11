@@ -118,7 +118,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     }
 
     node {
-        name "O=Offtaker,L=London,C=GB"
+        name "O=OfftakerPRC,L=London,C=GB"
         advertisedServices = []
         p2pPort 10017
         rpcPort 10018
@@ -144,11 +144,24 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
     }
     node {
-        name "O=Bank,L=London,C=GB"
+        name "O=HSBCBank,L=London,C=GB"
         advertisedServices = []
         p2pPort 10023
         rpcPort 10024
         webPort 10025
+        cordapps = [
+                "$project.group:cordapp-contracts-states:$project.version",
+                "$project.group:cordapp:$project.version",
+                "net.corda:corda-finance:$corda_release_version"
+        ]
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
+    }
+    node {
+        name "O=BankOfChina,L=Beijing,C=CN"
+        advertisedServices = []
+        p2pPort 10026
+        rpcPort 10027
+        webPort 10028
         cordapps = [
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",
