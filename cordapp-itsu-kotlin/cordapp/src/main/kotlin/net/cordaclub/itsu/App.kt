@@ -45,12 +45,12 @@ class TemplateApi(val rpcOps: CordaRPCOps) {
         println("ProjectValue:" + ProjectValue)
         println("EstimatedProjectCost" + EstimatedProjectCost)
         val BankParty = rpcOps.partiesFromName(Bank, false).single()
-        println("after BankParty" + BankParty.owningKey)
+        println("after BankParty" + BankParty.name + "Bank:" + Bank )
         val OfftakerParty = rpcOps.partiesFromName(Offtaker, false).single()
-        println("after OfftakerParty:" + OfftakerParty.owningKey)
+        println("after OfftakerParty:" + OfftakerParty.name + "Offtaker:" + Offtaker)
         val SecurityTrusteeParty = rpcOps.partiesFromName(SecurityTrustee, false).single()
-        println("after SecurityTrusteeParty" + SecurityTrusteeParty.owningKey)
-        rpcOps.startFlowDynamic(CreateProjectFlow::class.java, ProjectName, ProjectValue, ProjectStatus.STARTED, EstimatedProjectCost, 0, EstimatedProjectCost, SecurityTrusteeParty.owningKey, BankParty.owningKey, OfftakerParty.owningKey).returnValue.get()
+        println("after SecurityTrusteeParty" + SecurityTrusteeParty.name + "SecurityTrustee:" + SecurityTrustee)
+        rpcOps.startFlowDynamic(CreateProjectFlow::class.java, ProjectName, ProjectValue, ProjectStatus.STARTED, EstimatedProjectCost, 0, EstimatedProjectCost, SecurityTrusteeParty, BankParty, OfftakerParty).returnValue.get()
         return Response.ok("Project Created Here.").build()
     }
 /*
@@ -105,8 +105,9 @@ class TemplateApi(val rpcOps: CordaRPCOps) {
     fun getProjectsEndpoint(): Response {
         println("inside getProjects1")
         val projects = rpcOps.vaultQueryBy<net.cordaclub.itsu.ProjectState>().states.map { it.toString() }.joinToString("\r\n")
-        println("inside getProjects2")
+        println("inside getProjects2: Leghth =" + Response.ok(projects.length))
         return Response.ok(projects).build()
+
     }
     /* ADDED by Andris
         fun getProjectsEndpoint(): Response {
@@ -130,29 +131,25 @@ class TemplateApi(val rpcOps: CordaRPCOps) {
 
 @InitiatingFlow
 @StartableByRPC
-class CreateProjectFlow(val ProjectName: String, val ProjectValue: Int, val ProjectStatus: ProjectStatus, val EstimatedProjectCost: Int, val ProjectCostToDate: Int, val LoanSantionedAmount: Int, val SecurityTrustee: Party, val Bank: Party, val Offtaker: Party) : FlowLogic<Unit>() {
+class CreateProjectFlow(val ProjectName: String, val ProjectValue: Int, val ProjectStatus: ProjectStatus, val EstimatedProjectCost: Int, val ProjectCostToDate: Int, val LoanSanctionedAmount: Int, val SecurityTrustee: Party, val Bank: Party, val Offtaker: Party) : FlowLogic<Unit>() {
     override val progressTracker = ProgressTracker()
-
     @Suspendable
     override fun call() {
         println("inside CreateProjectFlow")
-
+        //
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
-                .addOutputState(ProjectState(ProjectName, ProjectValue,
-                        ProjectStatus, EstimatedProjectCost,ProjectCostToDate, LoanSantionedAmount,
-                        SecurityTrustee,  SecurityTrustee, Bank, Offtaker), ProjectContract.ID)
+            .addOutputState(ProjectState(ProjectName, ProjectValue,
+                    ProjectStatus, EstimatedProjectCost,ProjectCostToDate, LoanSanctionedAmount,
+                    SecurityTrustee,  SecurityTrustee, Bank, Offtaker), ProjectContract.ID)
 
 /*                .addOutputState(ProjectState(ProjectName, ProjectValue,
                          ProjectStatus, EstimatedProjectCost,ProjectCostToDate, LoanSantionedAmount,
                         ourIdentity,  SecurityTrustee, Bank, Offtaker), ProjectContract.ID)
 */
-//                .addOutputState(ProjectState(Project(ProjectName, ProjectValue, EstimatedProjectCost,
-//                        0, EstimatedProjectCost), ProjectStatus.STARTED, SecurityAgreement(ProjectName, ProjectValue, 5 ,ourIdentity, ourIdentity), ourIdentity, Bank, Offtaker), ProjectContract.ID)
-//                .addCommand(ProjectCommand.CreateProject(), ourIdentity.owningKey)
-//                .addCommand(ProjectContract.command.CreateProject(), ourIdentity.owningKey)
- .addCommand(ProjectContract.Commands.CreateProject(), ourIdentity.owningKey)
-        val signedTx = serviceHub.signInitialTransaction(txBuilder)
-        subFlow(FinalityFlow(signedTx))
+
+            .addCommand(ProjectContract.Commands.CreateProject(), ourIdentity.owningKey)
+                val signedTx = serviceHub.signInitialTransaction(txBuilder)
+                subFlow(FinalityFlow(signedTx))
     }
 }
 
@@ -200,6 +197,8 @@ class CloseProjectFlow(val ProjectName: String) : FlowLogic<Unit>() {
                 .addOutputState(inputState.copy( ProjectStatus = ProjectStatus.CLOSED), ProjectContract.ID)
         val signedTx = serviceHub.signInitialTransaction(txBuilder)
         subFlow(FinalityFlow(signedTx))
+
+
     }
 }
 
