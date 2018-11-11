@@ -216,13 +216,15 @@ class DeclareProjectFailureFlow(val ProjectName: String) : FlowLogic<Unit>() {
 
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
                 .addInputState(input)
-
+                .addOutputState(inputState.copy(ProjectOwner = inputState.Bank), ProjectContract.ID)
                 .addOutputState(inputState.copy( ProjectStatus = ProjectStatus.CLOSED_FAILURE), ProjectContract.ID)
 //                .addOutputState(inputState.copy( SecurityAgreement().SecurityAgreementName = inputState.ProjectName), SecurityAgreement().SecurityValue = inputState.EstimatedProjectCost,SecurityAgreement().SecurityAgreementOwner = inputState.Bank, ProjectContract.ID)
        //         .addOutputState(inputState.copy( SecurityAgreement().SecurityValue = inputState.EstimatedProjectCost), ProjectContract.ID)
          //       .addOutputState(inputState.copy( SecurityAgreement().SecurityAgreementOwner = inputState.Bank), ProjectContract.ID)
                 .addCommand(ProjectContract.Commands.DeclareProjectFailure(), ourIdentity.owningKey)
 //                .addCommand(ProjectContract.Commands.DeclareBankruptcy(), ourIdentity.owningKey)
+println("inputState.Bank:" + inputState.Bank.name)
+
         val signedTx = serviceHub.signInitialTransaction(txBuilder)
         subFlow(FinalityFlow(signedTx))
     }
