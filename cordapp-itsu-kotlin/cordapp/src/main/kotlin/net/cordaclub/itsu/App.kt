@@ -11,6 +11,7 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.webserver.services.WebServerPluginRegistry
 import java.util.function.Function
+import javax.ws.rs.*
 import javax.ws.rs.GET
 import javax.ws.rs.Path
 import javax.ws.rs.Produces
@@ -29,9 +30,8 @@ import javax.ws.rs.QueryParam
 // *****************
 @Path("template")
 class TemplateApi(val rpcOps: CordaRPCOps) {
-    @GET
+    @PUT
     @Path("CreateProject")
-    @Produces(MediaType.APPLICATION_JSON)
     fun CreateProjectEndpoint(
 
             @QueryParam("ProjectName") ProjectName: String,
@@ -40,108 +40,74 @@ class TemplateApi(val rpcOps: CordaRPCOps) {
             @QueryParam("SecurityTrustee") SecurityTrustee: String,
             @QueryParam("Bank") Bank: String,
             @QueryParam("Offtaker") Offtaker: String): Response {
-/*        println("inside createproject1")
-        println("ProjectName:" + ProjectName)
-        println("ProjectValue:" + ProjectValue)
-        println("EstimatedProjectCost" + EstimatedProjectCost)
-        */
 
         val BankParty = rpcOps.partiesFromName(Bank, false).single()
-//        println("after BankParty" + BankParty.name + "Bank:" + Bank )
         val OfftakerParty = rpcOps.partiesFromName(Offtaker, false).single()
-//        println("after OfftakerParty:" + OfftakerParty.name + "Offtaker:" + Offtaker)
         val SecurityTrusteeParty = rpcOps.partiesFromName(SecurityTrustee, false).single()
-//        println("after SecurityTrusteeParty" + SecurityTrusteeParty.name + "SecurityTrustee:" + SecurityTrustee)
-        rpcOps.startFlowDynamic(CreateProjectFlow::class.java, ProjectName, ProjectValue, ProjectStatus.STARTED, EstimatedProjectCost, EstimatedProjectCost, 0, 0, SecurityTrusteeParty, BankParty, OfftakerParty).returnValue.get()
-        return Response.ok("Project Created Here.").build()
+        try {
+            rpcOps.startFlowDynamic(CreateProjectFlow::class.java, ProjectName, ProjectValue, ProjectStatus.STARTED, EstimatedProjectCost, EstimatedProjectCost, 0, 0, SecurityTrusteeParty, BankParty, OfftakerParty).returnValue.get()
+        } catch (e: Exception)
+        {
+            println(e)
+        }
+        //TODO: add project name in response
+        return Response.ok("Project: " + ProjectName  + " Created.").build()
     }
-/*
-    // DeclareBankruptcy To be deleted since this is being done in the DeclareProjectFailure
-    @GET
-    @Path("DeclareBankruptcy")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun declareBankruptcyEndpoint(
-            @QueryParam("ProjectName") ProjectName: String): Response {
-        rpcOps.startFlowDynamic(DeclareBankruptcyFlow::class.java, ProjectName).returnValue.get()
-        return Response.ok("Project bankrupt.").build()
-    }
-*/
 
-    @GET
+    @PUT
     @Path("CloseProject")
-    @Produces(MediaType.APPLICATION_JSON)
     fun CloseProjectEndpoint(
             @QueryParam("ProjectName") ProjectName: String): Response {
-        rpcOps.startFlowDynamic(CloseProjectFlow::class.java, ProjectName).returnValue.get()
-        return Response.ok("Project Closed.").build()
+        try{
+            rpcOps.startFlowDynamic(CloseProjectFlow::class.java, ProjectName).returnValue.get()
+        } catch (e: Exception)
+        {
+            println(e)
+        }
+        return Response.ok("Project: " + ProjectName  + " Closed.").build()
     }
 
-    @GET
+    @PUT
     @Path("DeclareProjectSuccess")
-    @Produces(MediaType.APPLICATION_JSON)
     fun DeclareProjectSuccessEndpoint(
             @QueryParam("ProjectName") ProjectName: String): Response {
         rpcOps.startFlowDynamic(DeclareProjectSuccessFlow::class.java, ProjectName).returnValue.get()
-        return Response.ok("Project Success.").build()
+        return Response.ok("Project " + ProjectName + " Success.").build()
     }
 
-    @GET
+    @PUT
     @Path("DeclareProjectFailure")
-    @Produces(MediaType.APPLICATION_JSON)
     fun DeclareProjectFailureEndpoint(
             @QueryParam("ProjectName") ProjectName: String): Response {
         rpcOps.startFlowDynamic(DeclareProjectFailureFlow::class.java, ProjectName).returnValue.get()
-        return Response.ok("Project Failure.").build()
+        return Response.ok("Project " + ProjectName + " Failure.").build()
     }
 
     @GET
     @Path("getProjects")
     @Produces(MediaType.APPLICATION_JSON)
-    fun getProjectsEndpoint(): Response {
-        println("inside getProjects1")
-        val projects = rpcOps.vaultQueryBy<net.cordaclub.itsu.ProjectState>().states.map { it.toString() }.joinToString("\r\n")
-        println("inside getProjects2: Leghth =" + Response.ok(projects.length))
-        return Response.ok(projects).build()
-
-
-    }
-
-    // For Security Agreement State
-    @GET
-    @Path("CreateSecurityAgreement")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun CreateSecurityAgreementEndpoint(
-            @QueryParam("ProjectName") ProjectName: String): Response {
-
-        println("inside CreateSecurityAgreement 0")
-
-        rpcOps.startFlowDynamic(CreateSecurityAgreementFlow::class.java, ProjectName).returnValue.get()
-        return Response.ok("Security Agreement Created.").build()
-    }
-
+    fun getProjects() = rpcOps.vaultQueryBy<net.cordaclub.itsu.ProjectState>().states
 
     @GET
     @Path("getSecurityAgreements")
     @Produces(MediaType.APPLICATION_JSON)
-    fun getSecurityAgreementsEndpoint(): Response {
-        println("inside getSecurityAgreements 0")
-        val SecurityAgreements = rpcOps.vaultQueryBy<net.cordaclub.itsu.SecurityAgreementState>().states.map { it.toString() }.joinToString("\r\n")
-        println("inside getSecurityAgreements 1: length =" + Response.ok(SecurityAgreements.length))
-        return Response.ok(SecurityAgreements).build()
+    fun getSecurityAgreements() = rpcOps.vaultQueryBy<net.cordaclub.itsu.SecurityAgreementState>().states
 
 
+    // For Security Agreement State
+    @PUT
+    @Path("CreateSecurityAgreement")
+    fun CreateSecurityAgreementEndpoint(
+            @QueryParam("ProjectName") ProjectName: String): Response {
+        println("INSIDE CREATE SECURITY AGREEMENT")
+        try{
+            rpcOps.startFlowDynamic(CreateSecurityAgreementFlow::class.java, ProjectName).returnValue.get()
+        } catch (e: Exception)
+        {
+            println(e)
+        }
+        return Response.ok("Security Agreement Created.").build()
     }
-    /* ADDED by Andris
-        fun getProjectsEndpoint(): Response {
-
-        val gson = GsonBuilder().registerTypeAdapter(Party::class.java, PartySerializer())
-                .setPrettyPrinting()
-                .create()
-
-        val projects = gson.toJson(rpcOps.vaultQueryBy<ProjectState>())
-
-        return Response.ok(projects).build()
-    }*/
 
 }
 

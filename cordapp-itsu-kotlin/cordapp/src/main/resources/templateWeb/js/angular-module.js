@@ -14,10 +14,6 @@ app.controller('DemoAppController', function($http, $location, $uibModal) {
     const apiBaseURL = "/api/template/";
     let peers = [];
 
-    //$http.get(apiBaseURL + "me").then((response) => demoApp.thisNode = response.data.me);
-
-    //$http.get(apiBaseURL + "peers").then((response) => peers = response.data.peers);
-
     demoApp.openCreateProjectModal = () => {
         const modalInstance = $uibModal.open({
             templateUrl: 'demoAppModal-create-project.html',
@@ -32,34 +28,34 @@ app.controller('DemoAppController', function($http, $location, $uibModal) {
         modalInstance.result.then(() => {}, () => {});
     };
 
-    //modalInstance is the same variable name as above.
     demoApp.openCloseProjectModal = () => {
-            const modalInstance = $uibModal.open({
-                templateUrl: 'demoAppModal-close-project.html',
-                controller: 'ModalInstanceCtrl-close',
-                controllerAs: 'modalInstance',
-                resolve: {
-                    demoApp: () => demoApp,
-                    apiBaseURL: () => apiBaseURL,
-                    peers: () => peers
-                }
-            });
-            modalInstance.result.then(() => {}, () => {});
-        };
+        const modalInstance = $uibModal.open({
+            templateUrl: 'demoAppModal-close-project.html',
+            controller: 'ModalInstanceCtrl-close',
+            controllerAs: 'modalInstance',
+            resolve: {
+                demoApp: () => demoApp,
+                apiBaseURL: () => apiBaseURL,
+                peers: () => peers
+            }
+        });
+        modalInstance.result.then(() => {}, () => {});
+    };
+
 
     demoApp.openCreateAgreementModal = () => {
-                const modalInstance = $uibModal.open({
-                    templateUrl: 'demoAppModal-create-agreement.html',
-                    controller: 'ModalInstanceCtrl-create-agreement',
-                    controllerAs: 'modalInstance',
-                    resolve: {
-                        demoApp: () => demoApp,
-                        apiBaseURL: () => apiBaseURL,
-                        peers: () => peers
-                    }
-                });
-                modalInstance.result.then(() => {}, () => {});
-            };
+        const modalInstance = $uibModal.open({
+            templateUrl: 'demoAppModal-create-agreement.html',
+            controller: 'ModalInstanceCtrl-create-agreement',
+            controllerAs: 'modalInstance',
+            resolve: {
+                demoApp: () => demoApp,
+                apiBaseURL: () => apiBaseURL,
+                peers: () => peers
+            }
+        });
+        modalInstance.result.then(() => {}, () => {});
+    };
 
 
     demoApp.getProjects = () => $http.get(apiBaseURL + "getProjects")
@@ -67,12 +63,13 @@ app.controller('DemoAppController', function($http, $location, $uibModal) {
             .map((key) => response.data[key].state.data)
             .reverse());
 
-    /*demoApp.getAgreements = () => $http.get(apiBaseURL + "getAgreements")
+    demoApp.getAgreements = () => $http.get(apiBaseURL + "getSecurityAgreements")
         .then((response) => demoApp.agreements = Object.keys(response.data)
             .map((key) => response.data[key].state.data)
-            .reverse());*/
+            .reverse());
 
     demoApp.getProjects();
+    demoApp.getAgreements();
 });
 
 app.controller('ModalInstanceCtrl', function ($http, $location, $uibModalInstance, $uibModal, demoApp, apiBaseURL, peers) {
@@ -90,7 +87,7 @@ app.controller('ModalInstanceCtrl', function ($http, $location, $uibModalInstanc
 
             $uibModalInstance.close();
 
-            const createProjectEndpoint = `${apiBaseURL}createProject?ProjectName=${modalInstance.form.project-name}&ProjectValue=${modalInstance.form.project-value}&EstimatedProjectCost=${modalInstance.form.project-value}&Bank=${modalInstance.form.project-bank}&offtaker=${modalInstance.form.project-offtaker}`;
+            const createProjectEndpoint = `${apiBaseURL}CreateProject?ProjectName=${modalInstance.form.value1}&ProjectValue=${modalInstance.form.value2}&EstimatedProjectCost=${modalInstance.form.value3}&SecurityTrustee=${modalInstance.form.value4}&Bank=${modalInstance.form.value5}&Offtaker=${modalInstance.form.value6}`;
 
             $http.put(createProjectEndpoint).then(
                 (result) => {
@@ -136,13 +133,12 @@ app.controller('ModalInstanceCtrl-create-agreement', function ($http, $location,
             modalInstance.formError = false;
 
             $uibModalInstance.close();
-            const createAgreementEndpoint = `${apiBaseURL}GenerateSecurityAgreement?ProjectName=${modalInstance.form.projectnameagreement}`;
+            const createAgreementEndpoint = `${apiBaseURL}CreateSecurityAgreement?ProjectName=${modalInstance.form.projectnameagreement}`;
 
-            // Create PO and handle success / fail responses.
             $http.put(createAgreementEndpoint).then(
                 (result) => {
                     modalInstance.displayMessage(result);
-                    //demoApp.getAgreements();
+                    demoApp.getAgreements();
                 },
                 (result) => {
                     modalInstance.displayMessage(result);
@@ -170,7 +166,7 @@ app.controller('ModalInstanceCtrl-create-agreement', function ($http, $location,
     }
 });
 
-/*app.controller('ModalInstanceCtrl-close', function ($http, $location, $uibModalInstance, $uibModal, demoApp, apiBaseURL, peers) {
+app.controller('ModalInstanceCtrl-close', function ($http, $location, $uibModalInstance, $uibModal, demoApp, apiBaseURL, peers) {
     const modalInstance = this;
 
     modalInstance.peers = peers;
@@ -185,18 +181,18 @@ app.controller('ModalInstanceCtrl-create-agreement', function ($http, $location,
 
             $uibModalInstance.close();
 
-            //needs to change to a close project endpoint
-            // when constant name changes, below needs to change with it.
-            const createIOUEndpoint = `${apiBaseURL}create-iou?partyName=${modalInstance.form.counterparty}&iouValue=${modalInstance.form.value}`;
+            const closeProjectEndpoint = `${apiBaseURL}CloseProject?ProjectName=${modalInstance.form.projectnameclose}`;
 
-            // Create PO and handle success / fail responses.
-            $http.put(createIOUEndpoint).then(
+            const closeProjectEndpoint = `${apiBaseURL}CloseProject?ProjectName=${modalInstance.form.projectnameclose}`;
+
+            $http.put(closeProjectEndpoint).then(
                 (result) => {
                     modalInstance.displayMessage(result);
                     demoApp.getProjects();
                 },
                 (result) => {
                     modalInstance.displayMessage(result);
+                    demoApp.getProjects();
                 }
             );
         }
@@ -205,9 +201,9 @@ app.controller('ModalInstanceCtrl-create-agreement', function ($http, $location,
     modalInstance.cancel = () => $uibModalInstance.dismiss();
 
     function invalidFormInput() {
-        return isNaN(modalInstance.form.value) || (modalInstance.form.counterparty === undefined);
+        return false;
     }
-});*/
+});
 
 // Controller for success/fail modal dialogue.
 app.controller('messageCtrl', function ($uibModalInstance, message) {
