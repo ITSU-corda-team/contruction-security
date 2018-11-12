@@ -118,7 +118,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     }
 
     node {
-        name "O=OfftakerPRC,L=London,C=GB"
+        name "O=OfftakerPRC,L=Beijing,C=CN"
         advertisedServices = []
         p2pPort 10017
         rpcPort 10018
@@ -169,6 +169,19 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
     }
+    node {
+        name "O=SPV,L=London,C=GB"
+        advertisedServices = []
+        p2pPort 10011
+        rpcPort 10012
+        webPort 10013
+        cordapps = [
+                "$project.group:cordapp-contracts-states:$project.version",
+                "$project.group:cordapp:$project.version",
+                "net.corda:corda-finance:$corda_release_version"
+        ]
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
+    }
     /* YGK
     node {
         name "O=PartyA_Shareholder1,L=London,C=GB"
@@ -189,19 +202,6 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         p2pPort 10008
         rpcPort 10009
         webPort 10010
-        cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-                "net.corda:corda-finance:$corda_release_version"
-        ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": []]]
-    }
-    node {
-        name "O=PartyC_SPV,L=London,C=GB"
-        advertisedServices = []
-        p2pPort 10011
-        rpcPort 10012
-        webPort 10013
         cordapps = [
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",
