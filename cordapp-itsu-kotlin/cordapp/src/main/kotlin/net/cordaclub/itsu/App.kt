@@ -29,36 +29,102 @@ import javax.ws.rs.QueryParam
 // *****************
 @Path("template")
 class TemplateApi(val rpcOps: CordaRPCOps) {
-
-    // 1. Create Project
     @GET
     @Path("CreateProject")
     @Produces(MediaType.APPLICATION_JSON)
     fun CreateProjectEndpoint(
 
-        @QueryParam("ProjectName") ProjectName: String,
-        @QueryParam("ProjectValue") ProjectValue: Int,
-        @QueryParam("EstimatedProjectCost") EstimatedProjectCost: Int,
-        @QueryParam("SPV") SPV: String,
-        @QueryParam("SecurityTrustee") SecurityTrustee: String,
-        @QueryParam("Bank") Bank: String,
-        @QueryParam("Offtaker") Offtaker: String): Response {
+            @QueryParam("ProjectName") ProjectName: String,
+            @QueryParam("ProjectValue") ProjectValue: Int,
+            @QueryParam("EstimatedProjectCost") EstimatedProjectCost: Int,
+            @QueryParam("SPV") SPV: String,
+            @QueryParam("SecurityTrustee") SecurityTrustee: String,
+            @QueryParam("Bank") Bank: String,
+            @QueryParam("Offtaker") Offtaker: String): Response {
+/*        println("inside createproject1")
+        println("ProjectName:" + ProjectName)
+        println("ProjectValue:" + ProjectValue)
+        println("EstimatedProjectCost" + EstimatedProjectCost)
+        */
 
-        println("in CreateProject"  )
-
-        val SPVParty = rpcOps.partiesFromName(SPV, false).single()
-        println("after SPVParty" + SPVParty.name + "SPV:" + SPV )
         val BankParty = rpcOps.partiesFromName(Bank, false).single()
 //        println("after BankParty" + BankParty.name + "Bank:" + Bank )
         val OfftakerParty = rpcOps.partiesFromName(Offtaker, false).single()
 //        println("after OfftakerParty:" + OfftakerParty.name + "Offtaker:" + Offtaker)
         val SecurityTrusteeParty = rpcOps.partiesFromName(SecurityTrustee, false).single()
-//        println("after SecurityTrusteeParty" + SecurityTrusteeParty.name + "SecurityTrustee:" + SecurityTrustee)
-        rpcOps.startFlowDynamic(CreateProjectFlow::class.java, ProjectName, ProjectValue, ProjectStatus.STARTED, ProjectCompleteStatus.NULL, EstimatedProjectCost, EstimatedProjectCost, 0, 0, SPVParty, SecurityTrusteeParty, BankParty, OfftakerParty).returnValue.get()
+        println("after SecurityTrusteeParty" + SecurityTrusteeParty.name + "SecurityTrustee:" + SecurityTrustee)
+
+        val SPVParty = rpcOps.partiesFromName(SPV, false).single()
+
+println("after SPVParty:" + SPVParty.name )
+
+        rpcOps.startFlowDynamic(CreateProjectFlow::class.java, ProjectName, ProjectValue, ProjectStatus.STARTED, EstimatedProjectCost, EstimatedProjectCost, 0, 0, SPVParty, SecurityTrusteeParty, BankParty, OfftakerParty).returnValue.get()
         return Response.ok("Project Created Here.").build()
     }
+/*
+    // DeclareBankruptcy To be deleted since this is being done in the DeclareProjectFailure
+    @GET
+    @Path("DeclareBankruptcy")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun declareBankruptcyEndpoint(
+            @QueryParam("ProjectName") ProjectName: String): Response {
+        rpcOps.startFlowDynamic(DeclareBankruptcyFlow::class.java, ProjectName).returnValue.get()
+        return Response.ok("Project bankrupt.").build()
+    }
+*/
 
-    // 2. Create Security Agreement State
+    @GET
+    @Path("CloseProject")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun CloseProjectEndpoint(
+            @QueryParam("ProjectName") ProjectName: String): Response {
+        rpcOps.startFlowDynamic(CloseProjectFlow::class.java, ProjectName).returnValue.get()
+        return Response.ok("Project Closed.").build()
+    }
+
+    // 3. Close Project THREE Arguments
+    @GET
+    @Path("CloseProjectAdvanced")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun CloseProjectAdvancedEndpoint(
+            @QueryParam("ProjectName") ProjectName: String,
+            @QueryParam("ProjectCostTillDate") ProjectCostTillDate: Int,
+            @QueryParam("ProjectCashFlow") ProjectCashFlow: Int): Response {
+        rpcOps.startFlowDynamic(CloseProjectAdvancedFlow::class.java, ProjectName, ProjectCostTillDate, ProjectCashFlow).returnValue.get()
+        return Response.ok("Project Closed.").build()
+    }
+
+    @GET
+    @Path("DeclareProjectSuccess")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun DeclareProjectSuccessEndpoint(
+            @QueryParam("ProjectName") ProjectName: String): Response {
+        rpcOps.startFlowDynamic(DeclareProjectSuccessFlow::class.java, ProjectName).returnValue.get()
+        return Response.ok("Project Success.").build()
+    }
+
+    @GET
+    @Path("DeclareProjectFailure")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun DeclareProjectFailureEndpoint(
+            @QueryParam("ProjectName") ProjectName: String): Response {
+        rpcOps.startFlowDynamic(DeclareProjectFailureFlow::class.java, ProjectName).returnValue.get()
+        return Response.ok("Project Failure.").build()
+    }
+
+    @GET
+    @Path("getProjects")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun getProjectsEndpoint(): Response {
+        println("inside getProjects1")
+        val projects = rpcOps.vaultQueryBy<net.cordaclub.itsu.ProjectState>().states.map { it.toString() }.joinToString("\r\n")
+        println("inside getProjects2: Leghth =" + Response.ok(projects.length))
+        return Response.ok(projects).build()
+
+
+    }
+
+    // For Security Agreement State
     @GET
     @Path("CreateSecurityAgreement")
     @Produces(MediaType.APPLICATION_JSON)
@@ -71,91 +137,26 @@ class TemplateApi(val rpcOps: CordaRPCOps) {
         return Response.ok("Security Agreement Created.").build()
     }
 
-    // 3. Close Project THREE Arguments
-    @GET
-    @Path("CloseProject")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun CloseProjectEndpoint(
-            @QueryParam("ProjectName") ProjectName: String,
-            @QueryParam("ProjectCostTillDate") ProjectCostTillDate: Int,
-            @QueryParam("ProjectCashFlow") ProjectCashFlow: Int): Response {
-        rpcOps.startFlowDynamic(CloseProjectFlow::class.java, ProjectName, ProjectCostTillDate, ProjectCashFlow).returnValue.get()
-        return Response.ok("Project Closed.").build()
-    }
-    // 6. Get Projects
-    @GET
-    @Path("getProjects")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun getProjectsEndpoint(): Response {
-//        println("inside getProjects1")
-        val projects = rpcOps.vaultQueryBy<net.cordaclub.itsu.ProjectState>().states.map { it.toString() }.joinToString("\r\n")
-        return Response.ok(projects).build()
-    }
 
-    // 7. Get Security Agreements
     @GET
     @Path("getSecurityAgreements")
     @Produces(MediaType.APPLICATION_JSON)
     fun getSecurityAgreementsEndpoint(): Response {
-//        println("inside getSecurityAgreements 0")
+        println("inside getSecurityAgreements 0")
         val SecurityAgreements = rpcOps.vaultQueryBy<net.cordaclub.itsu.SecurityAgreementState>().states.map { it.toString() }.joinToString("\r\n")
+        println("inside getSecurityAgreements 1: length =" + Response.ok(SecurityAgreements.length))
         return Response.ok(SecurityAgreements).build()
+
+
     }
-/*
-    // 3. Close Project ONE Argument
-    @GET
-    @Path("CloseProject")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun CloseProjectEndpoint(
-            @QueryParam("ProjectName") ProjectName: String): Response {
-        rpcOps.startFlowDynamic(CloseProjectFlow::class.java, ProjectName).returnValue.get()
-        return Response.ok("Project Closed.").build()
-    }
-
-    // 3b. CloseProjectWithSuccessFailure
-    @GET
-    @Path("CloseProjectWithSuccessFailure")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun CloseProjectWithSuccessFailureEndpoint(
-        @QueryParam("ProjectName") ProjectName: String,
-        @QueryParam("ProjectCashFlow") ProjectCashFlow: Int): Response {
-
-        val statusProject = if ()
-        {
-            rpcOps.startFlowDynamic(DeclareProjectSuccessFlow::class.java, ProjectName).returnValue.get()
-
-        } else
-        {
-            rpcOps.startFlowDynamic(DeclareProjectFailureFlow::class.java, ProjectName).returnValue.get()
-
-        }
-
-        return Response.ok("Project Closed with Success or Failure.").build()
-    }
-
-
-    // 4. Declare Project a Success
-    @GET
-    @Path("DeclareProjectSuccess")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun DeclareProjectSuccessEndpoint(
-            @QueryParam("ProjectName") ProjectName: String): Response {
-
-//          println("inside DeclareProjectSuccess")
-        rpcOps.startFlowDynamic(DeclareProjectSuccessFlow::class.java, ProjectName).returnValue.get()
-        return Response.ok("Project Success.").build()
-    }
-
-    // 5. Declare Project a Failure
-    @GET
-    @Path("DeclareProjectFailure")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun DeclareProjectFailureEndpoint(
-            @QueryParam("ProjectName") ProjectName: String): Response {
-        rpcOps.startFlowDynamic(DeclareProjectFailureFlow::class.java, ProjectName).returnValue.get()
-        return Response.ok("Project Failure.").build()
-    }
-*/
+    /* ADDED by Andris
+        fun getProjectsEndpoint(): Response {
+        val gson = GsonBuilder().registerTypeAdapter(Party::class.java, PartySerializer())
+                .setPrettyPrinting()
+                .create()
+        val projects = gson.toJson(rpcOps.vaultQueryBy<ProjectState>())
+        return Response.ok(projects).build()
+    }*/
 
 }
 
@@ -163,31 +164,59 @@ class TemplateApi(val rpcOps: CordaRPCOps) {
 // * Flows *
 // *********
 
-// CreateProjectFlow
+
+
 @InitiatingFlow
 @StartableByRPC
-class CreateProjectFlow(val ProjectName: String, val ProjectValue: Int, val ProjectStatus: ProjectStatus, val ProjectCompleteStatus: ProjectCompleteStatus, val EstimatedProjectCost: Int, val LoanSanctionedAmount: Int, val ProjectCostToDate: Int, val ProjectCashFlow: Int, val SPV: Party, val SecurityTrustee: Party, val Bank: Party, val Offtaker: Party) : FlowLogic<Unit>() {
+class CreateProjectFlow(val ProjectName: String, val ProjectValue: Int, val ProjectStatus: ProjectStatus,  val EstimatedProjectCost: Int, val LoanSanctionedAmount: Int, val ProjectCostToDate: Int, val ProjectCashFlow: Int, val SPV: Party, val SecurityTrustee: Party, val Bank: Party, val Offtaker: Party) : FlowLogic<Unit>() {
     override val progressTracker = ProgressTracker()
     @Suspendable
     override fun call() {
-
         println("inside CreateProjectFlow")
+        //
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
-            .addOutputState(ProjectState(ProjectName, ProjectValue,
-                    ProjectStatus, ProjectCompleteStatus, EstimatedProjectCost,LoanSanctionedAmount, ProjectCostToDate, ProjectCashFlow,
-                    SPV,  SecurityTrustee, Bank, Offtaker), ProjectContract.ID)
-                    //use of ourIdentity in addOutputState
-            .addCommand(ProjectContract.Commands.CreateProject(), ourIdentity.owningKey)
+                .addOutputState(ProjectState(ProjectName, ProjectValue,
+                        ProjectStatus, ProjectCompleteStatus.NULL, EstimatedProjectCost,LoanSanctionedAmount, ProjectCostToDate, ProjectCashFlow,
+                        SPV,  SecurityTrustee, Bank, Offtaker), ProjectContract.ID)
+
+/*                .addOutputState(ProjectState(ProjectName, ProjectValue,
+                         ProjectStatus, EstimatedProjectCost,ProjectCostToDate, LoanSantionedAmount,
+                        ourIdentity,  SecurityTrustee, Bank, Offtaker), ProjectContract.ID)
+*/
+
+                .addCommand(ProjectContract.Commands.CreateProject(), ourIdentity.owningKey)
         val signedTx = serviceHub.signInitialTransaction(txBuilder)
         subFlow(FinalityFlow(signedTx))
     }
 }
 
 
+@InitiatingFlow
+@StartableByRPC
+class CloseProjectFlow(val ProjectName: String) : FlowLogic<Unit>() {
+    override val progressTracker = ProgressTracker()
+
+    @Suspendable
+    override fun call() {
+        val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
+        val input = projectStates.single { it.state.data.ProjectName == ProjectName }
+        val inputState = input.state.data
+
+        val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
+                .addInputState(input)
+                .addCommand(ProjectContract.Commands.CloseProject(), ourIdentity.owningKey)
+                .addOutputState(inputState.copy( ProjectStatus = ProjectStatus.CLOSED), ProjectContract.ID)
+        val signedTx = serviceHub.signInitialTransaction(txBuilder)
+        subFlow(FinalityFlow(signedTx))
+
+
+    }
+}
+
 // 2.  CloseProjectFlow THREE Arguments
 @InitiatingFlow
 @StartableByRPC
-class CloseProjectFlow(val ProjectName: String, val ProjectCostTillDate: Int, val ProjectCashFlow: Int) : FlowLogic<Unit>() {
+class CloseProjectAdvancedFlow(val ProjectName: String, val ProjectCostTillDate: Int, val ProjectCashFlow: Int) : FlowLogic<Unit>() {
     override val progressTracker = ProgressTracker()
 
     @Suspendable
@@ -211,9 +240,9 @@ class CloseProjectFlow(val ProjectName: String, val ProjectCostTillDate: Int, va
 
         if (ProjectCashFlow > LoanSanctionedAmount)
         {
-             projectStatusInd = ProjectStatus.COMPLETE
-             projectCompleteStatusInd = ProjectCompleteStatus.COMPLETE_SUCCESS
-             securityAgreementOwner = inputProjectState.Offtaker
+            projectStatusInd = ProjectStatus.COMPLETE
+            projectCompleteStatusInd = ProjectCompleteStatus.COMPLETE_SUCCESS
+            securityAgreementOwner = inputProjectState.Offtaker
         }
         else
         {
@@ -231,15 +260,85 @@ class CloseProjectFlow(val ProjectName: String, val ProjectCostTillDate: Int, va
 
                 .addCommand(ProjectContract.Commands.CloseProject(), ourIdentity.owningKey)
 
-    val signedTx = serviceHub.signInitialTransaction(txBuilder)
+        val signedTx = serviceHub.signInitialTransaction(txBuilder)
         subFlow(FinalityFlow(signedTx))
 
     }
 }
 
+@InitiatingFlow
+@StartableByRPC
+class DeclareProjectSuccessFlow(val ProjectName: String) : FlowLogic<Unit>() {
+    override val progressTracker = ProgressTracker()
+
+    @Suspendable
+    override fun call() {
 
 
-// CreateSecurityAgreementFlow
+
+        val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
+        val input = projectStates.single { it.state.data.ProjectName == ProjectName }
+        val inputState = input.state.data
+
+        //Build transaction
+/* ygk orig*/
+        val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
+                .addInputState(input)
+                .addOutputState(inputState.copy(ProjectOwner = inputState.Offtaker), ProjectContract.ID)
+                .addOutputState(inputState.copy(ProjectStatus = ProjectStatus.CLOSED_SUCCESS), ProjectContract.ID)
+
+                .addCommand(ProjectContract.Commands.DeclareProjectSuccess(), ourIdentity.owningKey)
+        val signedTx = serviceHub.signInitialTransaction(txBuilder)
+        subFlow(FinalityFlow(signedTx))
+    }
+
+        /*
+        val inputProjectState = projectStates.single { it.state.data.Project.ProjectName == ProjectName }
+        val inputProject = inputProjectState.state.data
+        val notary = serviceHub.networkMapCache.notaryIdentities.first()
+        val txBuilder = TransactionBuilder(notary).apply {
+            addCommand(Command(ProjectCommand.DeclareProjectSuccess(), ourIdentity.owningKey))
+            addInputState(inputProjectState)
+            addOutputState(inputProjectState.state.copy(data = inputProjectState.state.date.let{
+                ProjectState(
+                        ProjectStatus = ProjectStatus.CLOSED_SUCCESS,
+                        ProjectOwner.owningKey =  Offtaker.owningKey
+                )
+            }
+        }
+  */
+}
+
+
+
+@InitiatingFlow
+@StartableByRPC
+class DeclareProjectFailureFlow(val ProjectName: String) : FlowLogic<Unit>() {
+    override val progressTracker = ProgressTracker()
+
+    @Suspendable
+    override fun call() {
+        val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
+        val input = projectStates.single { it.state.data.ProjectName == ProjectName }
+        val inputState = input.state.data
+
+        val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
+                .addInputState(input)
+                .addOutputState(inputState.copy(ProjectOwner = inputState.Bank), ProjectContract.ID)
+                .addOutputState(inputState.copy( ProjectStatus = ProjectStatus.CLOSED_FAILURE), ProjectContract.ID)
+//                .addOutputState(inputState.copy( SecurityAgreement().SecurityAgreementName = inputState.ProjectName), SecurityAgreement().SecurityValue = inputState.EstimatedProjectCost,SecurityAgreement().SecurityAgreementOwner = inputState.Bank, ProjectContract.ID)
+                //         .addOutputState(inputState.copy( SecurityAgreement().SecurityValue = inputState.EstimatedProjectCost), ProjectContract.ID)
+                //       .addOutputState(inputState.copy( SecurityAgreement().SecurityAgreementOwner = inputState.Bank), ProjectContract.ID)
+                .addCommand(ProjectContract.Commands.DeclareProjectFailure(), ourIdentity.owningKey)
+//                .addCommand(ProjectContract.Commands.DeclareBankruptcy(), ourIdentity.owningKey)
+        println("inputState.Bank:" + inputState.Bank.name)
+
+        val signedTx = serviceHub.signInitialTransaction(txBuilder)
+        subFlow(FinalityFlow(signedTx))
+    }
+}
+
+
 @InitiatingFlow
 @StartableByRPC
 class CreateSecurityAgreementFlow(val ProjectName: String) : FlowLogic<Unit>() {
@@ -248,16 +347,16 @@ class CreateSecurityAgreementFlow(val ProjectName: String) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
 
-        println("in CreateSecurityAgreementFlow" )
-
         //Get the ProjectState for the ProjectName
         val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
         val inputProject = projectStates.single { it.state.data.ProjectName == ProjectName }
         val inputProjectState = inputProject.state.data
 
         val SecurityAgreementName = ProjectName + "_SecurityAgreement"
+println("ProjectOwner:" + inputProjectState.ProjectOwner.name)
         val SecurityTrustee = inputProjectState.SecurityTrustee
-        val SecurityAgreementOwner = inputProjectState.SPV
+//        val SecurityAgreementOwner = inputProjectState.SecurityTrustee
+        val SecurityAgreementOwner = inputProjectState.ProjectOwner
         val SecurityAgreementValue = inputProjectState.ProjectValue
         val SecurityInterest = 5 /*Random Number*/
 
@@ -265,136 +364,39 @@ class CreateSecurityAgreementFlow(val ProjectName: String) : FlowLogic<Unit>() {
 
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
 
-        .addOutputState(SecurityAgreementState(SecurityAgreementName, ProjectName, SecurityAgreementValue,
-                SecurityInterest, SecurityAgreementOwner, SecurityTrustee), SecurityAgreementContract.ID)
-        .addCommand(SecurityAgreementContract.Commands.CreateSecurityAgreement(), ourIdentity.owningKey)
+                .addOutputState(SecurityAgreementState(SecurityAgreementName, ProjectName, SecurityAgreementValue,
+                        SecurityInterest, SecurityTrustee, SecurityAgreementOwner), SecurityAgreementContract.ID)
+                .addCommand(SecurityAgreementContract.Commands.CreateSecurityAgreement(), ourIdentity.owningKey)
 
         val signedTx = serviceHub.signInitialTransaction(txBuilder)
         subFlow(FinalityFlow(signedTx))
 
-    }
 
-    /*
-    // 2.  CloseProjectFlow ONE Argument
-    @InitiatingFlow
-    @StartableByRPC
-    class CloseProjectFlow(val ProjectName: String) : FlowLogic<Unit>() {
-        override val progressTracker = ProgressTracker()
+        println("in CreateSecurityAgreementFlow" )
 
-        @Suspendable
-        override fun call() {
-            val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
-            val input = projectStates.single { it.state.data.ProjectName == ProjectName }
-            val inputState = input.state.data
+        //Get the ProjectState for the ProjectName
+  //      val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
+    //    val inputProject = projectStates.single { it.state.data.ProjectName == ProjectName }
+      //  val inputProjectState = inputProject.state.data
 
-            val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
-                .addInputState(input)
-                .addCommand(ProjectContract.Commands.CloseProject(), ourIdentity.owningKey)
-                .addOutputState(inputState.copy(ProjectOwner = inputState.Offtaker, ProjectStatus = ProjectStatus.COMPLETE ), ProjectContract.ID)
-               // .addOutputState(inputState.copy(ProjectStatus = ProjectStatus.COMPLETE), ProjectContract.ID)
-            val signedTx = serviceHub.signInitialTransaction(txBuilder)
-            subFlow(FinalityFlow(signedTx))
-        }
-    }
+//        val SecurityAgreementName = ProjectName + "_SecurityAgreement"
+  //      val SecurityTrustee = inputProjectState.SecurityTrustee
+    //    val SecurityAgreementValue = inputProjectState.ProjectValue
+      //  val SecurityInterest = 5 /*Random Number*/
 
-    // CloseProjectWithSuccessFailureFlow
-    @InitiatingFlow
-    @StartableByRPC
-    class CloseProjectWithSuccessFailureFlow(val ProjectName: String) : FlowLogic<Unit>() {
-        override val progressTracker = ProgressTracker()
+        //println("SecurityTrustee: " + SecurityTrustee.name)
 
-        @Suspendable
-        override fun call() {
-            val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
-            val input = projectStates.single { it.state.data.ProjectName == ProjectName }
-            val inputState = input.state.data
-            val ProjectCashFlow = inputState.ProjectCashFlow
-            val LoanSanctionedAmount = inputState.LoanSanctionedAmount
+        //val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
 
-            val max = if (a > b) a else b
+ //               .addOutputState(SecurityAgreementState(SecurityAgreementName, ProjectName, SecurityAgreementValue,
+ //                       SecurityInterest,
+  //                      SecurityTrustee, SecurityTrustee), SecurityAgreementContract.ID)
+  //              .addCommand(SecurityAgreementContract.Commands.CreateSecurityAgreement(), ourIdentity.owningKey)
 
-
-            val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
-                    .addInputState(input)
-                    .addCommand(ProjectContract.Commands.CloseProject(), ourIdentity.owningKey)
-                    .addOutputState(inputState.copy(ProjectOwner = inputState.Offtaker, ProjectStatus = ProjectStatus.COMPLETE ), ProjectContract.ID)
-            val signedTx = serviceHub.signInitialTransaction(txBuilder)
-            subFlow(FinalityFlow(signedTx))
-        }
-    }
-
-
-    // DeclareProjectSuccessFlow
-    @InitiatingFlow
-    @StartableByRPC
-    class DeclareProjectSuccessFlow(val ProjectName: String) : FlowLogic<Unit>() {
-        override val progressTracker = ProgressTracker()
-
-        @Suspendable
-        override fun call() {
-    //        println("Inside DeclareProjectSuccessFlow: " +ProjectName )
-
-            val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
-            val inputProject = projectStates.single { it.state.data.ProjectName == ProjectName }
-            val inputProjectState = inputProject.state.data
-
-    //        println("inputProjectState.ProjectName: " + inputProjectState.ProjectName )
-
-            val SecurityAgreementName = inputProjectState.ProjectName + "_SecurityAgreement"
-            val securityAgreementStates = serviceHub.vaultService.queryBy<SecurityAgreementState>().states
-            val inputSecurityAgreement = securityAgreementStates.single { it.state.data.SecurityAgreementName == SecurityAgreementName }
-            val inputSecurityAgreementState = inputSecurityAgreement.state.data
-
-    //        println("inputProjectState.Offtaker: " + inputProjectState.Offtaker.name)
-
-            //Build transaction
-            val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
-                .addInputState(inputProject)
-                .addOutputState(inputProjectState.copy(ProjectCompleteStatus = ProjectCompleteStatus.COMPLETE_SUCCESS), ProjectContract.ID)
-
-                .addInputState(inputSecurityAgreement)
-                .addOutputState(inputSecurityAgreementState.copy(SecurityAgreementOwner = inputProjectState.Offtaker), ProjectContract.ID)
-
-                .addCommand(ProjectContract.Commands.DeclareProjectSuccess(), ourIdentity.owningKey)
-            val signedTx = serviceHub.signInitialTransaction(txBuilder)
-            subFlow(FinalityFlow(signedTx))
-        }
+  //      val signedTx = serviceHub.signInitialTransaction(txBuilder)
+        subFlow(FinalityFlow(signedTx))
 
     }
-
-    // DeclareProjectFailureFlow
-    @InitiatingFlow
-    @StartableByRPC
-    class DeclareProjectFailureFlow(val ProjectName: String) : FlowLogic<Unit>() {
-        override val progressTracker = ProgressTracker()
-
-        @Suspendable
-        override fun call() {
-            val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
-            val inputProject = projectStates.single { it.state.data.ProjectName == ProjectName }
-            val inputProjectState = inputProject.state.data
-
-            val SecurityAgreementName = inputProjectState.ProjectName + "_SecurityAgreement"
-            val securityAgreementStates = serviceHub.vaultService.queryBy<SecurityAgreementState>().states
-            val inputSecurityAgreeemnt = securityAgreementStates.single { it.state.data.SecurityAgreementName == SecurityAgreementName }
-            val inputSecurityAgreeemntState = inputSecurityAgreeemnt.state.data
-
-            println("inputProjectState.Bank: " + inputProjectState.Bank.name)
-
-            //Build transaction
-            val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
-                .addInputState(inputProject)
-                .addOutputState(inputProjectState.copy(ProjectCompleteStatus = ProjectCompleteStatus.COMPLETE_FAILURE), ProjectContract.ID)
-
-                .addInputState(inputSecurityAgreeemnt)
-                .addOutputState(inputSecurityAgreeemntState.copy(SecurityAgreementOwner = inputProjectState.Bank), ProjectContract.ID)
-
-                .addCommand(ProjectContract.Commands.DeclareProjectFailure(), ourIdentity.owningKey)
-            val signedTx = serviceHub.signInitialTransaction(txBuilder)
-            subFlow(FinalityFlow(signedTx))
-        }
-    }*/
-
 }
 
 
