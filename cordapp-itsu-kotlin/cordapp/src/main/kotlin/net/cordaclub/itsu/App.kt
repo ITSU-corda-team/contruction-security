@@ -71,7 +71,12 @@ class TemplateApi(val rpcOps: CordaRPCOps) {
             @QueryParam("ProjectName") ProjectName: String,
             @QueryParam("ProjectCostTillDate") ProjectCostTillDate: Int,
             @QueryParam("ProjectCashFlow") ProjectCashFlow: Int): Response {
-        rpcOps.startFlowDynamic(CloseProjectAdvancedFlow::class.java, ProjectName, ProjectCostTillDate, ProjectCashFlow).returnValue.get()
+        try {
+            rpcOps.startFlowDynamic(CloseProjectAdvancedFlow::class.java, ProjectName, ProjectCostTillDate, ProjectCashFlow).returnValue.get()
+        } catch(e: Exception)
+        {
+            println(e)
+        }
         return Response.ok("Project " + ProjectName  + " Closed.").build()
     }
 
@@ -102,6 +107,20 @@ class TemplateApi(val rpcOps: CordaRPCOps) {
     @Path("getSecurityAgreements")
     @Produces(MediaType.APPLICATION_JSON)
     fun getSecurityAgreements() = rpcOps.vaultQueryBy<net.cordaclub.itsu.SecurityAgreementState>().states
+
+    @PUT
+    @Path("CreateSecurityAgreement")
+    fun CreateSecurityAgreementEndpoint(
+            @QueryParam("ProjectName") ProjectName: String): Response {
+        try{
+            rpcOps.startFlowDynamic(CreateSecurityAgreementFlow::class.java, ProjectName).returnValue.get()
+        } catch (e: Exception)
+        {
+            println(e)
+        }
+        return Response.ok("Security Agreement Created.").build()
+    }
+
 
 
 }
@@ -168,21 +187,22 @@ class CloseProjectAdvancedFlow(val ProjectName: String, val ProjectCostTillDate:
     @Suspendable
     override fun call() {
 
+        println("here")
         val projectStates = serviceHub.vaultService.queryBy<ProjectState>().states
         val inputProject = projectStates.single { it.state.data.ProjectName == ProjectName }
         val inputProjectState = inputProject.state.data
         val securityAgreementName = inputProjectState.ProjectName + "_SecurityAgreement"
-
+        println("here1")
         val securityAgreementStates = serviceHub.vaultService.queryBy<SecurityAgreementState>().states
         val inputSecurityAgreement = securityAgreementStates.single { it.state.data.SecurityAgreementName == securityAgreementName }
         val inputSecurityAgreementState = inputSecurityAgreement.state.data
-
+        println("here2")
         val LoanSanctionedAmount = inputProjectState.LoanSanctionedAmount
 
         val projectStatusInd: ProjectStatus
         val projectCompleteStatusInd: ProjectCompleteStatus
         val securityAgreementOwner: Party
-
+        println("here3")
 
         if (ProjectCashFlow > LoanSanctionedAmount)
         {
