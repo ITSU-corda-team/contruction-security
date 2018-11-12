@@ -42,7 +42,7 @@ data class SecurityAgreementState(
         val ProjectName: String,
         val SecurityValue: Int,
         val SecurityInterest: Int,
-        val SPV: Party,
+        val SecurityAgreementOwner: Party,
         val SecurityTrustee: Party) : ContractState {
     override val participants  = listOf( SecurityTrustee)
 //    override val participants: List<AbstractParty>
@@ -74,14 +74,14 @@ class SecurityAgreementContract : Contract {
             "There should be one output state of type SecurityAgreementState." using (tx.outputsOfType<ProjectState>().size == 1)
             "There must be two signers." using (setOfSigners.size == 2)
             "The borrower and lender must be signers." using (command.signers.containsAll(listOf(
-                    outputSecurityAgreement.SPV.owningKey, outputSecurityAgreement.SecurityTrustee.owningKey)))
+                    outputSecurityAgreement.SecurityAgreementOwner.owningKey, outputSecurityAgreement.SecurityTrustee.owningKey)))
 
         }
 
         when (command.value) {
             is SecurityAgreementContract.Commands.CreateSecurityAgreement -> {
                 "Please provide ProjectName" using (inputSecurityAgreement.single().ProjectName.isEmpty())
-                "Owner and Receiver will be different" using (outputSecurityAgreement.SPV != outputSecurityAgreement.SecurityTrustee)
+                "Owner and Receiver will be different" using (outputSecurityAgreement.SecurityAgreementOwner != outputSecurityAgreement.SecurityTrustee)
             }
 
         }

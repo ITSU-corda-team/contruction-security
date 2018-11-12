@@ -207,7 +207,6 @@ class CloseProjectFlow(val ProjectName: String, val ProjectCostTillDate: Int, va
         val projectStatusInd: ProjectStatus
         val projectCompleteStatusInd: ProjectCompleteStatus
         val securityAgreementOwner: Party
-       // val projectOwner: Party
 
 
         if (ProjectCashFlow > LoanSanctionedAmount)
@@ -215,14 +214,12 @@ class CloseProjectFlow(val ProjectName: String, val ProjectCostTillDate: Int, va
              projectStatusInd = ProjectStatus.COMPLETE
              projectCompleteStatusInd = ProjectCompleteStatus.COMPLETE_SUCCESS
              securityAgreementOwner = inputProjectState.Offtaker
-       //      projectOwner = inputProjectState.Offtaker
         }
         else
         {
             projectStatusInd = ProjectStatus.COMPLETE
             projectCompleteStatusInd = ProjectCompleteStatus.COMPLETE_FAILURE
-             securityAgreementOwner = inputProjectState.Bank
-        //     projectOwner = inputProjectState.Offtaker
+            securityAgreementOwner = inputProjectState.Bank
         }
 
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
@@ -260,7 +257,7 @@ class CreateSecurityAgreementFlow(val ProjectName: String) : FlowLogic<Unit>() {
 
         val SecurityAgreementName = ProjectName + "_SecurityAgreement"
         val SecurityTrustee = inputProjectState.SecurityTrustee
-        val SPV = inputProjectState.SPV
+        val SecurityAgreementOwner = inputProjectState.SPV
         val SecurityAgreementValue = inputProjectState.ProjectValue
         val SecurityInterest = 5 /*Random Number*/
 
@@ -269,7 +266,7 @@ class CreateSecurityAgreementFlow(val ProjectName: String) : FlowLogic<Unit>() {
         val txBuilder = TransactionBuilder(serviceHub.networkMapCache.notaryIdentities[0])
 
         .addOutputState(SecurityAgreementState(SecurityAgreementName, ProjectName, SecurityAgreementValue,
-                SecurityInterest, SPV, SecurityTrustee), SecurityAgreementContract.ID)
+                SecurityInterest, SecurityAgreementOwner, SecurityTrustee), SecurityAgreementContract.ID)
         .addCommand(SecurityAgreementContract.Commands.CreateSecurityAgreement(), ourIdentity.owningKey)
 
         val signedTx = serviceHub.signInitialTransaction(txBuilder)
