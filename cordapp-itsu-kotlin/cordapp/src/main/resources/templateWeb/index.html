@@ -52,26 +52,34 @@ COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
     <form>
         <div class="modal-body">
             <div class="form-group">
-                <label for="project-name" class="control-label">Project Name:</label>
-                <input type="text" ng-model="modalInstance.form.value1" class="form-control" id="project-name">
+                <label for="value1" class="control-label">Project Name:</label>
+                <input type="text" ng-model="modalInstance.form.value1" class="form-control" id="value1">
             </div>
             <div class="form-group">
-                <label for="project-value" class="control-label">Project Value:</label>
-                <input type="text" ng-model="modalInstance.form.value2" class="form-control" id="project-value">
+                <label for="value2" class="control-label">Project Value:</label>
+                <input type="text" ng-model="modalInstance.form.value2" class="form-control" id="value2">
             </div>
             <div class="form-group">
-                <label for="project-cost" class="control-label">Project Cost:</label>
-                <input type="text" ng-model="modalInstance.form.value3" class="form-control" id="project-cost">
+                <label for="value3" class="control-label">Project Cost:</label>
+                <input type="text" ng-model="modalInstance.form.value3" class="form-control" id="value3">
             </div>
             <div class="form-group">
-                <label for="project-bank" class="control-label">Bank:</label>
-                <input type="text" ng-model="modalInstance.form.value4" class="form-control" id="project-bank">
+                <label for="value4" class="control-label">Trustee:</label>
+                <input type="text" ng-model="modalInstance.form.value4" class="form-control" id="value4">
             </div>
             <div class="form-group">
-                <label for="project-offtaker" class="control-label">Project Offtaker:</label>
-                <input type="text" ng-model="modalInstance.form.value5" class="form-control" id="project-offtaker">
+                <label for="value5" class="control-label">Bank:</label>
+                <input type="text" ng-model="modalInstance.form.value5" class="form-control" id="value5">
             </div>
-            <div ng-show="modalInstance1.formError" class="form-group">
+            <div class="form-group">
+                <label for="value6" class="control-label">Project Offtaker:</label>
+                <input type="text" ng-model="modalInstance.form.value6" class="form-control" id="value6">
+            </div>
+            <div class="form-group">
+                <label for="value7" class="control-label">SPV:</label>
+                <input type="text" ng-model="modalInstance.form.value7" class="form-control" id="value7">
+            </div>
+            <div ng-show="modalInstance.formError" class="form-group">
                 <div class="alert alert-danger" role="alert">
                     <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
                     <span class="sr-only">Error:</span>
@@ -80,21 +88,31 @@ COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
             </div>
         </div>
         <div class="modal-footer">
-            <button ng-click="modalInstance1.cancel()" type="button" class="btn btn-default">Exit</button>
-            <button ng-click="modalInstance1.create()" type="button" class="btn btn-primary">Create Project</button>
+            <button ng-click="modalInstance.cancel()" type="button" class="btn btn-default">Exit</button>
+            <!--<button type="button" onclick="autofillsuccess()" class="btn btn-default">Fill(success)</button>-->
+            <!--<button type="button" onclick="autofillfailure()" class="btn btn-default">Fill(failure)</button>-->
+            <button ng-click="modalInstance.create()" type="button" class="btn btn-primary">Create Project</button>
         </div>
     </form>
 </script>
 
-<!--<script type="text/ng-template" id="demoAppModal-close-project.html">
+<script type="text/ng-template" id="demoAppModal-close-project.html">
     <div class="modal-header">
         <h4 class="modal-title">Close Existing Project</h4>
     </div>
     <form>
         <div class="modal-body">
             <div class="form-group">
-                <label for="project-name-close" class="control-label">Project Name:</label>
-                <input type="text" ng-model="modalInstance.form.value" class="form-control" id="project-name-close">
+                <label for="projectnameclose" class="control-label">Project Name:</label>
+                <input type="text" ng-model="modalInstance.form.projectnameclose" class="form-control" id="projectnameclose">
+            </div>
+            <div class="form-group">
+                <label for="projectcosttilldate" class="control-label">Cost (to date):</label>
+                <input type="text" ng-model="modalInstance.form.projectcosttilldate" class="form-control" id="projectcosttilldate">
+            </div>
+            <div class="form-group">
+                <label for="projectcashflow" class="control-label">Cash flow:</label>
+                <input type="text" ng-model="modalInstance.form.projectcashflow" class="form-control" id="projectcashflow">
             </div>
             <div ng-show="modalInstance.formError" class="form-group">
                 <div class="alert alert-danger" role="alert">
@@ -109,7 +127,7 @@ COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
             <button ng-click="modalInstance.create()" type="button" class="btn btn-primary">Close Project</button>
         </div>
     </form>
-</script>-->
+</script>
 
 <script type="text/ng-template" id="demoAppModal-create-agreement.html">
     <div class="modal-header">
@@ -119,7 +137,13 @@ COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
         <div class="modal-body">
             <div class="form-group">
                 <label for="projectnameagreement" class="control-label">Project Name:</label>
-                <input type="text" ng-model="modalInstance.form.value" class="form-control" id="projectnameagreement">
+                <!--<select>
+                    <option ng-repeat="row in obj[&quot;'Architect'&quot;]" value="{{row}}">{{row}}</option>
+                </select>-->
+                <select ng-model="modalInstance.form.projectnameagreement" class="form-control" id="projectnameagreement"
+                        ng-options="project for project in modalInstance.myprojects">
+                </select>
+                <!--<input type="text" ng-model="modalInstance.form.projectnameagreement" class="form-control" id="projectnameagreement">-->
             </div>
             <div ng-show="modalInstance.formError" class="form-group">
                 <div class="alert alert-danger" role="alert">
@@ -134,7 +158,32 @@ COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
             <button ng-click="modalInstance.create()" type="button" class="btn btn-primary">Create Agreement</button>
         </div>
     </form>
-</script>-->
+</script>
+
+<!-- exists just for demonstration purposes -->
+<script type="text/javascript">
+
+    function autofillsuccess()
+    {
+        document.getElementById('value1').value = "HK_Macau_Bridge_Success";
+        document.getElementById('value2').value = 30;
+        document.getElementById('value3').value = 20;
+        document.getElementById('value4').value = "SecurityTrustee";
+        document.getElementById('value5').value = "HSBCBank";
+        document.getElementById('value6').value = "OfftakerPRC";
+    }
+
+    function autofillfailure()
+    {
+        document.getElementById('value1').value = "HK_Macau_Bridge_Failure";
+        document.getElementById('value2').value = 20;
+        document.getElementById('value3').value = 10;
+        document.getElementById('value4').value = "SecurityTrustee";
+        document.getElementById('value5').value = "BankOfChina";
+        document.getElementById('value6').value = "OfftakerPRC";
+    }
+</script>
+
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
     <a class="navbar-brand js-scroll-trigger" href="#home">
@@ -189,21 +238,34 @@ COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
         <div class="my-auto">
             <h2 class="mb-5">Projects</h2>
             <div class="row">
-                <div>
                     <div ng-show="!demoApp.projects.length" class="panel-body">Use the "Create Projects" button to create a new project.</div>
-                    <div ng-repeat="project in demoApp.projects" class="panel panel-default">
-                        <div class="panel-body">
-                            <ul>
-                                <li>ProjectName: {{project.ProjectName}}</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                    <table class="table">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Lender (Bank)</th>
+                                <th>Loan ($USD)</th>
+                                <th>Trustee</th>
+                                <th>Cost (To Date)</th>
+                                <th>Cost (Estimated)</th>
+                            </tr>
+                        </thead>
+                        <tr ng-repeat="project in demoApp.projects">
+                            <td>{{project.projectName}}</td>
+                            <td>{{project.projectStatus}}</td>
+                            <td>{{project.bank}}</td>
+                            <td>{{project.loanSanctionedAmount}}</td>
+                            <td>{{project.securityTrustee}}</td>
+                            <td>{{project.projectCostToDate}}</td>
+                            <td>{{project.estimatedProjectCost}}</td>
+                        </tr>
+                    </table>
             </div>
             <br>
             <div class="row" style = 'margin-left:0px'>
                 <button ng-click="demoApp.openCreateProjectModal()" type="button" class="btn btn-default navbar-btn">Create New Project</button>
-                <button ng-click="demoApp.openCloseProjectModal()" type="button" class="btn btn-default navbar-btn" style="margin-left: 5px;">Close Project - COMMENTED</button>
+                <button ng-click="demoApp.openCloseProjectModal()" type="button" class="btn btn-default navbar-btn">Close Project</button>
 
             </div>
         </div>
@@ -217,13 +279,24 @@ COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
             <div class="row">
                 <div>
                     <div ng-show="!demoApp.agreements.length" class="panel-body">Use the "Create Agreement" button to create a new agreement.</div>
-                    <div ng-repeat="agreement in demoApp.agreements" class="panel panel-default">
-                        <div class="panel-body">
-                            <ul>
-                                <li>Lender: {{agreement.lender}}</li>
-                            </ul>
-                        </div>
-                    </div>
+                    <table class="table">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>Security Agreement</th>
+                            <th>Value</th>
+                            <th>Interest(%)</th>
+                            <th>Agreement Owner</th>
+                            <th>Security Trustee</th>
+                        </tr>
+                        </thead>
+                        <tr ng-repeat="agreement in demoApp.agreements">
+                            <td>{{agreement.securityAgreementName}}</td>
+                            <td>{{agreement.securityValue}}</td>
+                            <td>{{agreement.securityInterest}}</td>
+                            <td>{{agreement.securityAgreementOwner}}</td>
+                            <td>{{agreement.securityTrustee}}</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
             <br>
