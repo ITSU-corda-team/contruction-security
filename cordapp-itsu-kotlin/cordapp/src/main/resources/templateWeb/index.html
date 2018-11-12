@@ -245,21 +245,26 @@ COMING WEEKS WE'LL WRITE A TUTORIAL ON HOW BEST TO DO THIS.
                             <tr>
                                 <th>Name</th>
                                 <th>Status</th>
+                                <th>Value</th>
                                 <th>Lender (Bank)</th>
                                 <th>Loan ($USD)</th>
                                 <th>Trustee</th>
-                                <th>Cost (To Date)</th>
                                 <th>Cost (Estimated)</th>
+                                <th>Cash Flow/th>
+                                <th>Success</th>
                             </tr>
                         </thead>
                         <tr ng-repeat="project in demoApp.projects">
                             <td>{{project.projectName}}</td>
                             <td>{{project.projectStatus}}</td>
+                            <td>{{project.projectValue}}</td>
                             <td>{{project.bank}}</td>
                             <td>{{project.loanSanctionedAmount}}</td>
                             <td>{{project.securityTrustee}}</td>
-                            <td>{{project.projectCostToDate}}</td>
                             <td>{{project.estimatedProjectCost}}</td>
+                            <td>{{project.projectCashFlow}}</td>
+                            <td>{{project.projectCompleteStatus}}</td>
+                            <!--<td>{{project.</td>-->
                         </tr>
                     </table>
             </div>
